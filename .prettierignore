@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+coverage/
+.next/
+.nuxt/
+.svelte-kit/
+
+# Logs
+*.log
+
+# Lock files (optional)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# Environment
+.env
+.env.*
+
+# Generated files
+*.min.js
+*.min.css
+*.generated.*
+generated/
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+
+# Static assets
+public/
+assets/
+
+# Package manager stores
+.pnpm-store/
+
+# Misc
+tmp/
+temp/
