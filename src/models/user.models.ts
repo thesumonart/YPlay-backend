@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-import { IUser } from '../types/user.types.ts';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import { IUser } from '../types/user.types.ts';
 
 const userSchema = new mongoose.Schema<IUser>(
   {

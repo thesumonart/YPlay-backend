@@ -1,4 +1,6 @@
 import mongoose, { HydratedDocument } from 'mongoose';
+import z from 'zod';
+import { createUserSchema } from '../validations/user.validation.ts';
 
 export interface IUser {
   username: string;
@@ -14,3 +16,5 @@ export interface IUser {
 }
 
 export type UserDocument = HydratedDocument<IUser>;
+
+export type createUserBody = z.infer<typeof createUserSchema.body>;
