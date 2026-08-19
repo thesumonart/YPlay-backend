@@ -4,6 +4,27 @@ import ApiResponse from '../utils/ApiResponse.ts';
 import asyncHandler from '../utils/asyncHandler.ts';
 import userService from '../services/user.service.ts';
 import { createUserBody } from '../types/user.types.ts';
+import { Types } from 'mongoose';
+
+const generateAccessAndRefreshToken = async (userId: Types.ObjectId) => {
+  try {
+    const user = await userService.findById(userId.toString());
+
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    const accessToken = user?.generateAccessToken();
+    const refreshToken = user?.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, 'Something went wrong while generating Access and Refresh token');
+  }
+};
 
 const userControllers = {
   registerUser: asyncHandler(async (req, res) => {
@@ -15,7 +36,8 @@ const userControllers = {
 
     const cleanupLocalFiles = () => {
       if (avatarLocalPath) fs.existsSync(avatarLocalPath) && fs.unlinkSync(avatarLocalPath);
-      if (coverImageLocalPath) fs.existsSync(coverImageLocalPath) && fs.unlinkSync(coverImageLocalPath);
+      if (coverImageLocalPath)
+        fs.existsSync(coverImageLocalPath) && fs.unlinkSync(coverImageLocalPath);
     };
 
     const existingEmail = await userService.findByEmail(reqBody.email);
@@ -49,6 +71,51 @@ const userControllers = {
     const response = new ApiResponse(201, user, 'User registered successfully');
 
     res.status(response.statusCode).json(response);
+  }),
+  loginUser: asyncHandler(async (req, res) => {
+    const reqBody = req.body;
+
+    if (!reqBody.username || !reqBody.email) {
+      throw new ApiError(400, 'Username or email is required');
+    }
+
+    const user =
+      (await userService.findByUsername(reqBody?.username)) ||
+      (await userService.findByEmail(reqBody?.email));
+
+    if (!user) {
+      throw new ApiError(404, 'User does not exists.');
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(reqBody.password);
+    if (!isPasswordValid) {
+      throw new ApiError(401, 'Invalid credentials');
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
+    const { password, refreshToken: _, ...loggedInUser } = user.toObject();
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .cookie('accessToken', accessToken, options)
+      .cookie('refreshToken', refreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          {
+            user: loggedInUser,
+            accessToken,
+            refreshToken,
+          },
+          'User logged In successfully.'
+        )
+      );
   }),
 };
 

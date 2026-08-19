@@ -11,6 +11,10 @@ const userService = {
     return User.findOne({ username });
   },
 
+  findById: async (userId: string) => {
+    return User.findById({ userId });
+  },
+
   uploadAvatar: async (localPath: string) => {
     return cloudinaryUploader(localPath);
   },
@@ -19,7 +23,9 @@ const userService = {
     return cloudinaryUploader(localPath);
   },
 
-  createUser: async (data: Pick<IUser, 'username' | 'email' | 'fullName' | 'password' | 'avatar' | 'coverImage'>) => {
+  createUser: async (
+    data: Pick<IUser, 'username' | 'email' | 'fullName' | 'password' | 'avatar' | 'coverImage'>
+  ) => {
     const user = await User.create(data);
     return User.findById(user._id).select('-password -refreshToken');
   },

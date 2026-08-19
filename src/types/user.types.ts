@@ -15,6 +15,12 @@ export interface IUser {
   updatedAt?: Date;
 }
 
-export type UserDocument = HydratedDocument<IUser>;
+export interface IUserMethods {
+  isPasswordCorrect(password: string): Promise<boolean>;
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
+}
+
+export type UserDocument = HydratedDocument<IUser, IUserMethods>;
 
 export type createUserBody = z.infer<typeof createUserSchema.body>;
