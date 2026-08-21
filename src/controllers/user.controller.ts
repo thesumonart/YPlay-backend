@@ -22,6 +22,7 @@ const generateAccessAndRefreshToken = async (userId: Types.ObjectId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
+    console.error('Token generation error:', error);
     throw new ApiError(500, 'Something went wrong while generating Access and Refresh token');
   }
 };
@@ -75,7 +76,7 @@ const userControllers = {
   loginUser: asyncHandler(async (req, res) => {
     const reqBody = req.body;
 
-    if (!reqBody.username || !reqBody.email) {
+    if (!reqBody?.username && !reqBody?.email) {
       throw new ApiError(400, 'Username or email is required');
     }
 
@@ -116,6 +117,21 @@ const userControllers = {
           'User logged In successfully.'
         )
       );
+  }),
+  logOutUser: asyncHandler(async (req, res) => {
+    const user = userService.updateUser(req.user?._id, { refreshToken: undefined });
+    if (!user) {
+      throw new ApiError(404, 'User not found.');
+    }
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    res
+      .clearCookie('accessToken', options)
+      .clearCookie('refreshToken', options)
+      .json(new ApiResponse(200, null, 'Logged out successfully.'));
   }),
 };
 

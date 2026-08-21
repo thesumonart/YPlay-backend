@@ -59,6 +59,7 @@ export const errorHandler: ErrorRequestHandler = (
       message: err.message,
       errors: err.errors,
     });
+    return;
   }
 
   // Log unexpected errors and respond with a generic 500 error

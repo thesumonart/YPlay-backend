@@ -12,7 +12,17 @@ const userService = {
   },
 
   findById: async (userId: string) => {
-    return User.findById({ userId });
+    return User.findById(userId);
+  },
+
+  updateUser: async (identifier: string, data: Partial<IUser>) => {
+    return User.findOneAndUpdate(
+      { $or: [{ _id: identifier }, { email: identifier }] },
+      { $set: data },
+      {
+        new: true,
+      }
+    ).select('-password -refreshToken');
   },
 
   uploadAvatar: async (localPath: string) => {
